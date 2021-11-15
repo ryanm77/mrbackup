@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #
-#Version 1.3 6/17/2017 ryan_mcdowell@yahoo.com
+#Version 1.4 6/19/2017 ryan_mcdowell@yahoo.com
 #
 
 #
@@ -9,7 +9,6 @@
 #
 CONFIGFILE=/usr/local/etc/mrbackup.conf
 LOGGING=1
-HOME="/backup/"
 DRYRUN=0
 PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games
 
@@ -103,7 +102,7 @@ return 0
 #---------------------------------------------------------------------------
 rsync_it ()
 {
-local RSYNCOPTS=" -aR --delete"
+local RSYNCOPTS=" -aR -H --delete"
 
 
 
@@ -146,7 +145,7 @@ then
   logging  "EXEC: $RSYNC$RSYNCOPTS $DIR $LOCATION" 1
   if [ "$DRYRUN" = "0" ]
   then
-    $RSYNC$RSYNCOPTS $DIR $HOME$HOSTNAME
+    $RSYNC$RSYNCOPTS $DIR $LOCATION
     return 0
   fi
 elif [ "$METHOD" = "ssh" ]
@@ -191,6 +190,8 @@ hardlink_it ()
 {
 
 
+LOCATION=$HOME"INCREMENTAL/"
+
 DATE=`date +%F`
 
 if [ ! -d $HOME"ARCHIVES/"$DATE ]
@@ -198,17 +199,18 @@ then
  mkdir $HOME"ARCHIVES/"$DATE
 fi
 
-if [ -d $HOME"ARCHIVES/"$DATE$HOME$1 ]
+echo $LOCATION
+logging "EXEC: cp -al $LOCATION$1 $HOME"ARCHIVES/"$DATE" 1
+
+if [ -d $HOME"ARCHIVES/"$DATE$1 ]
 then 
- logging "Directory $HOME"ARCHIVES/"$DATE$HOME$1 already exists, failing to hardlink." 0
+ logging "Directory $HOME"ARCHIVES/"$DATE$1 already exists, failing to hardlink." 0
  return 0
 fi
 
-
-logging "EXEC: cp -al --parents $HOME$1 $HOME"ARCHIVES/"$DATE" 1
 if [ "$DRYRUN" = "0" ]
 then
-  cp -al --parents $HOME$1 $HOME"ARCHIVES/"$DATE"/"
+  cp -al $LOCATION$1 $HOME"ARCHIVES/"$DATE"/"
 fi
 
 }
